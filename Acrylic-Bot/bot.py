@@ -2,9 +2,10 @@ import discord
 from discord.ext import commands
 import asqlite
 import os
-
-
+import aiofiles
+import asqlite
 class Acrylic(commands.Bot):
+    database:asqlite.Connection
     def __init__(self):
         intents = discord.Intents.default()
         intents.members = True
@@ -22,4 +23,21 @@ class Acrylic(commands.Bot):
         with open('./utils/schema.sql') as file:
             schemas = (file.read()).split(';')
             for schema in schemas:
-                print(schema)
+                await self.database.execute(schema)
+    
+    async def update_database_schema(self):
+        async with aiofiles.open('utils/schema.sql') as file:
+            schemas = await file.read()
+            for schema in schemas.split(';'):
+                ...
+    
+
+    async def run(self):
+        async with self, asqlite.connect(
+            'data.db'
+        ) as connection:
+            self.database = connection
+            try:
+                await self.start(TOKEN)
+            except KeyboardInterrupt:
+                await self.close()
